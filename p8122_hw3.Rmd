@@ -1,0 +1,14 @@
+---
+title: "Causal Inference HW 3"
+author: "Adeline Shin"
+date: "11/15/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+# Part I
+## Exercise 1
