@@ -137,7 +137,7 @@ subclass[which(data$ps>subclass.breaks[4])] = 4
 table(data$treat, subclass) #violates overlap
 ```
 
-The subclasses are not balanced in terms of their treatment groups, and the overlap is violated, so we need a diffferent number of subclasses. Next, 4 subclasses will be used as an attempt for subclassification.
+The subclasses are not balanced in terms of their treatment groups, and the overlap is violated, so we need a different number of subclasses. Next, 4 subclasses will be used as an attempt for subclassification.
 
 ```{r}
 # Too much overlap: try different subclass cutoffs
@@ -214,10 +214,45 @@ Covariate Balance for Each Subclass:
 * In subclass 2, all of the SMDs are below 0.2, indicating balance among all of the variables.
 
 ## 7: Marginal ACE of Participation on Wages
-```{r}
+```{r warning = FALSE}
+ACE0 <- mean(data$re78[which(subclass==0 & data$treat==1)])-mean(data$re78[which(subclass==0 & data$treat==0)])
+ACE1 <- mean(data$re78[which(subclass==1 & data$treat==1)])-mean(data$re78[which(subclass==1 & data$treat==0)])
+ACE2 <- mean(data$re78[which(subclass==2 & data$treat==1)])-mean(data$re78[which(subclass==2 & data$treat==0)])
 
+ace <- (nrow(data[which(subclass==0),])/nrow(data))*ACE0 + (nrow(data[which(subclass==1),])/nrow(data)) * ACE1 + (nrow(data[which(subclass==2),])/nrow(data)) * ACE2
+
+v01 <- var(data$re78[which(subclass==0 & data$treat==1)])
+v00 <- var(data$re78[which(subclass==0 & data$treat==0)])
+
+v11 <- var(data$re78[which(subclass==1 & data$treat==1)])
+v10 <- var(data$re78[which(subclass==1 & data$treat==0)])
+
+v21 <- var(data$re78[which(subclass==2 & data$treat==1)])
+v20 <- var(data$re78[which(subclass==2 & data$treat==0)])
+
+n0 <- nrow(data[which(subclass==0),])
+n1 <- nrow(data[which(subclass==1),])
+n2 <- nrow(data[which(subclass==2),])
+
+n01 <- nrow(data[which(subclass==0& data$treat==1),])
+n11 <- nrow(data[which(subclass==1& data$treat==1),])
+n21 <- nrow(data[which(subclass==2& data$treat==1),])
+n00 <- nrow(data[which(subclass==0& data$treat==0),])
+n10 <- nrow(data[which(subclass==1& data$treat==0),])
+n20 <- nrow(data[which(subclass==2& data$treat==0),])
+
+varace = (n1)^2/nrow(data)^2*((v11/n11)+(v10/n10)) + (n2)^2/nrow(data)^2*((v21/n21)+(v20/n20)) + (n0)^2/nrow(data)^2*((v01/n01)+(v00/n00))
+
+sdace<-sqrt(varace)
+
+CIL=ace-sdace*2
+CIU=ace+sdace*2
+
+print(CIL)
+print(CIU)
 ```
 
+The average causal effect of participating in a job training on wages is `r ace`, which is positive, so we can say that job training has a positive effect on wage. The confidence interval for the average causal effect is (`r CIL`, `r CIU`), which is a wide range, so we cannot be completely confident that the average causal effect is positive. The p-value of the average causal effect is 
 
 ## 8: Marginal ACE of Training and Salary
 ```{r}
@@ -225,7 +260,7 @@ Covariate Balance for Each Subclass:
 ```
 
 ## 9: Advantages and Disadvantages
-The regression-based approach to confounding adjustment and the subclassification can be very powerfulwhen attempting to compare two unbalanced groups, because if we balance the groups on just the propensity score, then all covariates in the model are also balanced. This allows for direct comparison of two groups that otherwise would not have been able to be comparred. However, we must make sure that the data is balanced within particular subclasses before proceeding with analysis, and this can sometimes be tough to do depending on the data.
+The regression-based approach to confounding adjustment and the subclassification can be very powerful when attempting to compare two unbalanced groups, because if we balance the groups on just the propensity score, then all covariates in the model are also balanced. This allows for direct comparison of two groups that otherwise would not have been able to be compared. However, we must make sure that the data is balanced within particular subclasses before proceeding with analysis, and this can sometimes be tough to do depending on the data.
 
 # Part II
 ## a: Non-parametric structural equations
