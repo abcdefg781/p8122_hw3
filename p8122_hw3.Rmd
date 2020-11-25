@@ -13,6 +13,8 @@ library(personalized)
 library(ggdag)
 library(tableone)
 library(jpeg)
+library(perm)
+library(ri)
 ```
 
 # Part I
@@ -37,6 +39,14 @@ In the DAG, there are the following arrows:
 ### Loading the Data
 ```{r}
 hw3_data = read.csv("./hw3_data.csv")
+hw3_data = hw3_data %>% 
+  mutate(
+    treat = factor(treat),
+    black = factor(black),
+    hispan = factor(hispan),
+    married = factor(married),
+    nodegree = factor(nodegree)
+  )
 ```
 
 ```{r}
@@ -248,11 +258,27 @@ sdace<-sqrt(varace)
 CIL=ace-sdace*2
 CIU=ace+sdace*2
 
-print(CIL)
-print(CIU)
+# p-value calculation
+y_obs = data$re78
+a = data$treat
+group_means_df = aggregate(y_obs, list(a), mean)
+group_counts = aggregate(y_obs, list(a), length)
+t_obs = group_means_df[1, 2] - group_means_df[2, 2]
+
+a = c(rep(1, 184), rep(0, 380)) # numbers taken from group_counts
+a_bold = genperms(a)
+
+rdist = rep(NA, times = ncol(a_bold))
+for (i in 1:ncol(a_bold)) {
+  a_tilde = a_bold[, i]
+  rdist[i] = mean(y_obs[a_tilde == 1]) - mean(y_obs[a_tilde == 0])
+}
+
+pval = mean(rdist >= abs(t_obs))
+pval
 ```
 
-The average causal effect of participating in a job training on wages is `r ace`, which is positive, so we can say that job training has a positive effect on wage. The confidence interval for the average causal effect is (`r CIL`, `r CIU`), which is a wide range, so we cannot be completely confident that the average causal effect is positive. The p-value of the average causal effect is 
+The average causal effect of participating in a job training on wages is `r ace`, which is positive, so we can say that solely based on the ACE, job training has a positive effect on wage. The confidence interval for the average causal effect is (`r CIL`, `r CIU`), which is a wide range, so we cannot be completely confident that the average causal effect is positive. The p-value of the average causal effect is 0.2678, which is greater than 0.05, so at a 0.05 significance level, we fail to reject the null hypothesis and say that job training does not have a positive effect on wage.
 
 ## 8: Marginal ACE of Training and Salary
 ```{r}
