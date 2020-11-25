@@ -278,11 +278,13 @@ pval = mean(rdist >= abs(t_obs))
 pval
 ```
 
-The average causal effect of participating in a job training on wages is `r ace`, which is positive, so we can say that solely based on the ACE, job training has a positive effect on wage. The confidence interval for the average causal effect is (`r CIL`, `r CIU`), which is a wide range, so we cannot be completely confident that the average causal effect is positive. The p-value of the average causal effect is 0.2678, which is greater than 0.05, so at a 0.05 significance level, we fail to reject the null hypothesis and say that job training does not have a positive effect on wage.
+The average causal effect of participating in a job training on wages is `r ace`, which is positive, so we can say that solely based on the ACE, job training has a positive effect on wage. The confidence interval for the average causal effect is (`r CIL`, `r CIU`), which is a wide range, so we cannot be completely confident that the average causal effect is positive. The p-value of the average causal effect is `r pval`, which is greater than 0.05, so at a 0.05 significance level, we fail to reject the null hypothesis and say that job training does not have a positive effect on wage.
 
-## 8: Marginal ACE of Training and Salary
+## 8: Marginal ACE of Training and Salary Accounting for Confounders
 ```{r}
-
+hw3_data$re78_bin = as.numeric(hw3_data$re78 > hw3_data$re75)
+reg_adj = glm(re78_bin ~ treat + age + educ + black + hispan + married, data = hw3_data, family = binomial)
+summary(reg_adj)
 ```
 
 ## 9: Advantages and Disadvantages
@@ -329,3 +331,7 @@ The regression-based approach to confounding adjustment and the subclassificatio
 
 1. No, because A has an arrow going to Y so that does not make A conditionally independent of Y given L.
 2. No, because U has arrows going to both L and Y, and A still has an arrow going to Y, so neither variable is conditionally independent of Y given L.
+3. Yes, because L is no longer a collider in the path from A to U to Y.
+4. ??? No, because conditioning on L does not account for A as a confounder on the path from U to A to Y.
+5. ??? No, because conditioning on L does not account  for A as a confounder on the path from U2 to A to Y.
+5. 
